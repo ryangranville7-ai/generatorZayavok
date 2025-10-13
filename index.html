@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор Заявок на Установку</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Стили для таблицы, чтобы она выглядела как в образце */
+        .application-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            background-color: white;
+        }
+        .application-table th,
+        .application-table td {
+            border: 2px solid black;
+            padding: 8px 12px;
+            vertical-align: top;
+            /* Добавим высоту для пустых ячеек */
+            height: 2.5em;
+        }
+        .application-table th {
+            text-align: left;
+            font-weight: bold;
+        }
+        .application-table .header-cell {
+            font-size: 1.25rem; /* 20px */
+            font-weight: bold;
+        }
+        .application-table .header-cell .city-span {
+             font-weight: bold;
+             color: #DC2626; /* red-600 */
+        }
+        .application-table .data-cell .value-span {
+            /* Убрали красный цвет по умолчанию */
+            font-weight: 500;
+        }
+        .application-table .label-cell {
+            font-weight: bold;
+            width: 30%;
+        }
+        .application-table .number-cell {
+            font-weight: bold;
+            width: 5%;
+            text-align: center;
+        }
+        /* Стили для статуса оплаты */
+        .status-paid {
+            color: #16A34A; /* green-600 */
+        }
+        .status-unpaid {
+            color: #DC2626; /* red-600 */
+        }
+        .font-bold-upper {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        /* Стили для предпросмотра комментариев */
+        .comments-preview {
+            white-space: pre-wrap; /* Отображает переносы строк */
+            word-break: break-word; /* Переносит длинные слова */
+        }
+        /* Отступы для скачиваемого изображения */
+        #application-preview {
+            padding: 1rem; /* 16px */
+            background-color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Генератор заявок</h1>
+            <p class="text-gray-600 mt-2">Заполните поля ниже, чтобы создать заявку. Готовый документ можно скачать в формате JPG.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Панель управления (форма ввода) -->
+            <div class="bg-white p-6 rounded-lg shadow-md controls">
+                <h2 class="text-xl font-bold mb-4 text-gray-700">Данные для заявки</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="city" class="block text-sm font-medium text-gray-700">Город</label>
+                        <input type="text" id="city" value="" placeholder="Например, Москва" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="client_info" class="block text-sm font-medium text-gray-700">ФИО клиента, тел.</label>
+                        <input type="text" id="client_info" value="" placeholder="Иванов Иван Иванович, 89001112233" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="install_date" class="block text-sm font-medium text-gray-700">Дата установки</label>
+                        <input type="text" id="install_date" value="" placeholder="14.10.2025" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="car_model" class="block text-sm font-medium text-gray-700">Модель и номер авто</label>
+                        <input type="text" id="car_model" value="" placeholder="Lada Vesta A123BC777" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="engine_vin" class="block text-sm font-medium text-gray-700">Модель ДВС и VIN-код</label>
+                        <input type="text" id="engine_vin" value="" placeholder="H4M-1.6 X7L..." class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700">Цена</label>
+                        <input type="text" id="price" value="" placeholder="125 000р – по QR коду" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="comments" class="block text-sm font-medium text-gray-700">Комментарии</label>
+                        <textarea id="comments" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Клиент оставил машину... Нажмите Enter для новой строки."></textarea>
+                    </div>
+                    <div>
+                        <label for="payment_status" class="block text-sm font-medium text-gray-700">Статус оплаты двигателя</label>
+                        <select id="payment_status" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="unpaid">Не оплачен</option>
+                            <option value="paid">Оплачен</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="manager" class="block text-sm font-medium text-gray-700">Менеджер, тел.</label>
+                        <input type="text" id="manager" value="" placeholder="Петров Петр 89001234567" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                 <button id="downloadBtn" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                    Скачать заявку (JPG)
+                </button>
+            </div>
+
+            <!-- Предпросмотр заявки -->
+            <div class="bg-white rounded-lg shadow-md">
+                 <div id="application-preview">
+                    <table class="application-table">
+                        <thead>
+                           <tr>
+                               <th colspan="2" class="header-cell">ЗАЯВКА НА УСТАНОВКУ</th>
+                               <th class="header-cell text-center"><span id="preview-city" class="city-span"></span></th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="number-cell">1</td>
+                                <td class="label-cell">ФИО клиента, тел.</td>
+                                <td class="data-cell">
+                                    <span id="preview-client-info" class="value-span"></span>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">2</td>
+                                <td class="label-cell">Дата установки</td>
+                                <td class="data-cell"><span id="preview-date" class="value-span"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="number-cell">3</td>
+                                <td class="label-cell">Модель Номер авто</td>
+                                <td class="data-cell"><span id="preview-car-model" class="value-span"></span></td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">4</td>
+                                <td class="label-cell">Модель ДВС вин код</td>
+                                <td class="data-cell"><span id="preview-engine-vin" class="value-span"></span></td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">5</td>
+                                <td class="label-cell">Цена</td>
+                                <td class="data-cell"><span id="preview-price" class="value-span"></span></td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">6</td>
+                                <td class="label-cell">Комментарии</td>
+                                <td class="data-cell">
+                                    <span id="preview-comments" class="value-span comments-preview"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="number-cell">7</td>
+                                <td class="label-cell">Статус оплаты двигателя</td>
+                                <td class="data-cell">
+                                    <span id="preview-payment-status" class="font-bold-upper status-unpaid">НЕ ОПЛАЧЕН</span>
+                                </td>
+                            </tr>
+                              <tr>
+                                <td class="number-cell">8</td>
+                                <td class="label-cell">Менеджер, тел</td>
+                                <td class="data-cell"><span id="preview-manager" class="value-span"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Функция для инициализации: очищает предпросмотр при загрузке
+            const initializePreview = () => {
+                const previewSpans = document.querySelectorAll('#application-preview .value-span, #application-preview .city-span');
+                previewSpans.forEach(span => {
+                    span.textContent = '';
+                });
+            };
+            
+            initializePreview();
+
+            // 1. Обработка простых текстовых полей
+            const textFields = {
+                'city': 'preview-city',
+                'client_info': 'preview-client-info',
+                'install_date': 'preview-date',
+                'car_model': 'preview-car-model',
+                'engine_vin': 'preview-engine-vin',
+                'price': 'preview-price',
+                'manager': 'preview-manager',
+            };
+
+            for (const inputId in textFields) {
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById(textFields[inputId]);
+                if (inputElement && previewElement) {
+                    inputElement.addEventListener('input', (event) => {
+                        previewElement.textContent = event.target.value;
+                    });
+                }
+            }
+
+            // 2. Обработка поля с комментариями (через textContent для поддержки переносов строк)
+            const commentsInput = document.getElementById('comments');
+            const commentsPreview = document.getElementById('preview-comments');
+            if (commentsInput && commentsPreview) {
+                commentsInput.addEventListener('input', (event) => {
+                    commentsPreview.textContent = event.target.value;
+                });
+            }
+
+            // 3. Обработка статуса оплаты с условным форматированием
+            const statusInput = document.getElementById('payment_status');
+            const statusPreview = document.getElementById('preview-payment-status');
+            if (statusInput && statusPreview) {
+                statusInput.addEventListener('input', (event) => {
+                    if (event.target.value === 'paid') {
+                        statusPreview.textContent = 'ОПЛАЧЕН';
+                        statusPreview.classList.remove('status-unpaid');
+                        statusPreview.classList.add('status-paid');
+                    } else {
+                        statusPreview.textContent = 'НЕ ОПЛАЧЕН';
+                        statusPreview.classList.remove('status-paid');
+                        statusPreview.classList.add('status-unpaid');
+                    }
+                });
+            }
+            
+            // 4. Обработчик для кнопки скачивания
+            const downloadButton = document.getElementById('downloadBtn');
+            const previewElement = document.getElementById('application-preview');
+
+            downloadButton.addEventListener('click', () => {
+                html2canvas(previewElement, {
+                    scale: 2, 
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'zayavka_na_ustanovku.jpg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.9); 
+                    link.click();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
