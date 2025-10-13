@@ -69,10 +69,17 @@
             white-space: pre-wrap; /* Отображает переносы строк */
             word-break: break-word; /* Переносит длинные слова */
         }
-        /* Отступы для скачиваемого изображения */
+        
+        /* НОВЫЕ СТИЛИ для фиксированного формата вывода */
+        .preview-container {
+            overflow-x: auto; /* Добавляет горизонтальный скролл на мобильных */
+        }
+
         #application-preview {
-            padding: 1rem; /* 16px */
+            padding: 1rem; /* Отступы внутри JPG файла */
             background-color: white;
+            width: 800px; /* Фиксированная ширина для стабильного формата JPG */
+            box-sizing: content-box;
         }
     </style>
 </head>
@@ -134,7 +141,7 @@
             </div>
 
             <!-- Предпросмотр заявки -->
-            <div class="bg-white rounded-lg shadow-md">
+            <div class="bg-white rounded-lg shadow-md preview-container">
                  <div id="application-preview">
                     <table class="application-table">
                         <thead>
