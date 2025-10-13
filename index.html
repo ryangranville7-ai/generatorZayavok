@@ -27,6 +27,7 @@
             vertical-align: top;
             /* Добавим высоту для пустых ячеек */
             height: 2.5em;
+            word-break: break-word; /* Для лучшего переноса длинных слов */
         }
         .application-table th {
             text-align: left;
@@ -70,16 +71,9 @@
             word-break: break-word; /* Переносит длинные слова */
         }
         
-        /* НОВЫЕ СТИЛИ для фиксированного формата вывода */
-        .preview-container {
-            overflow-x: auto; /* Добавляет горизонтальный скролл на мобильных */
-        }
-
         #application-preview {
             padding: 1rem; /* Отступы внутри JPG файла */
             background-color: white;
-            width: 800px; /* Фиксированная ширина для стабильного формата JPG */
-            box-sizing: content-box;
         }
     </style>
 </head>
@@ -141,7 +135,7 @@
             </div>
 
             <!-- Предпросмотр заявки -->
-            <div class="bg-white rounded-lg shadow-md preview-container">
+            <div class="bg-white rounded-lg shadow-md">
                  <div id="application-preview">
                     <table class="application-table">
                         <thead>
