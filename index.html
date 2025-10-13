@@ -71,22 +71,23 @@
             word-break: break-word; /* Переносит длинные слова */
         }
         
-        .preview-container {
-            overflow-x: auto; /* Добавляем горизонтальную прокрутку для предпросмотра */
+        .preview-wrapper {
+            overflow: hidden; /* Скрываем части, которые выходят за рамки при масштабировании */
         }
 
         #application-preview {
             padding: 1rem; /* Отступы внутри JPG файла */
             background-color: white;
             width: 700px; /* Фиксированная ширина для стабильного формата JPG */
+            transform-origin: top left; /* Масштабируем от левого верхнего угла */
         }
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-6 lg:p-8">
     <div class="max-w-7xl mx-auto">
         <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Генератор заявок</h1>
-            <p class="text-gray-600 mt-2">Заполните поля ниже, чтобы создать заявку. Готовый документ можно скачать в формате JPG.</p>
+            <h1 class="text-3xl font-bold text-gray-800">Генератор заявок на установку ДВС</h1>
+            <p class="text-gray-600 mt-2">Заполните поля ниже, чтобы создать заявку на установку ДВС. Готовый документ можно скачать в формате JPG.</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -140,7 +141,7 @@
             </div>
 
             <!-- Предпросмотр заявки -->
-            <div class="bg-white rounded-lg shadow-md preview-container">
+            <div class="bg-white rounded-lg shadow-md preview-wrapper">
                  <div id="application-preview">
                     <table class="application-table">
                         <thead>
@@ -264,10 +265,10 @@
             
             // 4. Обработчик для кнопки скачивания
             const downloadButton = document.getElementById('downloadBtn');
-            const previewElement = document.getElementById('application-preview');
+            const previewElementForDownload = document.getElementById('application-preview');
 
             downloadButton.addEventListener('click', () => {
-                html2canvas(previewElement, {
+                html2canvas(previewElementForDownload, {
                     scale: 2, 
                     useCORS: true,
                     backgroundColor: '#ffffff'
@@ -278,6 +279,31 @@
                     link.click();
                 });
             });
+
+            // 5. Логика масштабирования для предпросмотра
+            const previewWrapper = document.querySelector('.preview-wrapper');
+            const previewElementForScale = document.getElementById('application-preview');
+            const previewWidth = 700; // Фиксированная ширина контента для предпросмотра
+
+            const scalePreview = () => {
+                if (!previewWrapper || !previewElementForScale) return;
+                
+                const containerWidth = previewWrapper.offsetWidth;
+                
+                if (containerWidth < previewWidth) {
+                    const scale = containerWidth / previewWidth;
+                    previewElementForScale.style.transform = `scale(${scale})`;
+                    // Подгоняем высоту контейнера под масштабированный элемент
+                    previewWrapper.style.height = `${previewElementForScale.offsetHeight * scale}px`;
+                } else {
+                    previewElementForScale.style.transform = 'scale(1)';
+                    previewWrapper.style.height = 'auto';
+                }
+            };
+
+            // Запускаем масштабирование при загрузке и изменении размера окна
+            window.addEventListener('resize', scalePreview);
+            scalePreview();
         });
     </script>
 </body>
