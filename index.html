@@ -47,7 +47,7 @@
         }
         .application-table .label-cell {
             font-weight: bold;
-            width: 30%;
+            width: 40%; /* Сделали левую колонку шире, чтобы правая стала уже */
         }
         .application-table .number-cell {
             font-weight: bold;
@@ -71,9 +71,14 @@
             word-break: break-word; /* Переносит длинные слова */
         }
         
+        .preview-container {
+            overflow-x: auto; /* Добавляем горизонтальную прокрутку для предпросмотра */
+        }
+
         #application-preview {
             padding: 1rem; /* Отступы внутри JPG файла */
             background-color: white;
+            width: 700px; /* Фиксированная ширина для стабильного формата JPG */
         }
     </style>
 </head>
@@ -135,7 +140,7 @@
             </div>
 
             <!-- Предпросмотр заявки -->
-            <div class="bg-white rounded-lg shadow-md">
+            <div class="bg-white rounded-lg shadow-md preview-container">
                  <div id="application-preview">
                     <table class="application-table">
                         <thead>
