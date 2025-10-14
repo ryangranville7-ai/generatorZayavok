@@ -3,210 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор Доверенностей</title>
+    <title>Генератор Заявок на Установку</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { -webkit-tap-highlight-color: transparent; }
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
+        body {
+            font-family: 'Inter', sans-serif;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        #document-container {
-            position: absolute;
-            left: -9999px;
-            top: 0;
-            width: 800px; /* Fixed width for stable rendering */
-        }
-        #background-image {
-            display: block;
+        /* Стили для таблицы, чтобы она выглядела как в образце */
+        .application-table {
+            border-collapse: collapse;
             width: 100%;
-            height: auto;
+            font-size: 14px;
+            background-color: white;
         }
-        .dynamic-field {
-            position: absolute;
-            font-family: 'Times New Roman', Times, serif;
-            white-space: nowrap;
-            padding: 2px;
+        .application-table th,
+        .application-table td {
+            border: 2px solid black;
+            padding: 8px 12px;
+            vertical-align: top;
+            /* Добавим высоту для пустых ячеек */
+            height: 2.5em;
+            word-break: break-word; /* Для лучшего переноса длинных слов */
+        }
+        .application-table th {
+            text-align: left;
+            font-weight: bold;
+        }
+        .application-table .header-cell {
+            font-size: 1.25rem; /* 20px */
+            font-weight: bold;
+        }
+        .application-table .header-cell .city-span {
+             font-weight: bold;
+             color: #DC2626; /* red-600 */
+        }
+        .application-table .data-cell .value-span {
+            /* Убрали красный цвет по умолчанию */
+            font-weight: 500;
+        }
+        .application-table .label-cell {
+            font-weight: bold;
+            width: 40%; /* Сделали левую колонку шире, чтобы правая стала уже */
+        }
+        .application-table .number-cell {
+            font-weight: bold;
+            width: 5%;
+            text-align: center;
+        }
+        /* Стили для статуса оплаты */
+        .status-paid {
+            color: #16A34A; /* green-600 */
+        }
+        .status-unpaid {
+            color: #DC2626; /* red-600 */
+        }
+        .font-bold-upper {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        /* Стили для предпросмотра комментариев */
+        .comments-preview {
+            white-space: pre-wrap; /* Отображает переносы строк */
+            word-break: break-word; /* Переносит длинные слова */
+        }
+        
+        .preview-wrapper {
+            overflow: hidden; /* Скрываем части, которые выходят за рамки при масштабировании */
+        }
+
+        #application-preview {
+            padding: 1rem; /* Отступы внутри JPG файла */
+            background-color: white;
+            width: 700px; /* Фиксированная ширина для стабильного формата JPG */
+            transform-origin: top left; /* Масштабируем от левого верхнего угла */
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-
-    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="text-center text-white"><div class="loader mx-auto mb-4"></div><p id="loading-text">Загрузка...</p></div>
-    </div>
-
-    <!-- Main UI -->
-    <div class="container mx-auto p-4 max-w-lg">
-        <header class="text-center mb-6">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Генератор Доверенностей</h1>
-            <p class="text-gray-600 mt-1">Заполните поля и скачайте PDF.</p>
+<body class="bg-gray-100 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Генератор заявок на установку ДВС</h1>
+            <p class="text-gray-600 mt-2">Заполните поля ниже, чтобы создать заявку на установку ДВС. Готовый документ можно скачать в формате JPG.</p>
         </header>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <form id="data-form" class="space-y-4">
-                <div>
-                    <label for="input_doc_num" class="block text-sm font-medium text-gray-700">Номер доверенности</label>
-                    <input type="text" id="input_doc_num" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Ю-123">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Панель управления (форма ввода) --><div class="bg-white p-6 rounded-lg shadow-md controls">
+                <h2 class="text-xl font-bold mb-4 text-gray-700">Данные для заявки</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="city" class="block text-sm font-medium text-gray-700">Город</label>
+                        <input type="text" id="city" value="" placeholder="Например, Москва" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="client_info" class="block text-sm font-medium text-gray-700">ФИО клиента, тел.</label>
+                        <input type="text" id="client_info" value="" placeholder="Иванов Иван Иванович, 89001112233" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="install_date" class="block text-sm font-medium text-gray-700">Дата установки</label>
+                        <input type="text" id="install_date" value="" placeholder="14.10.2025" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="car_model" class="block text-sm font-medium text-gray-700">Модель и номер авто</label>
+                        <input type="text" id="car_model" value="" placeholder="Lada Vesta A123BC777" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="engine_vin" class="block text-sm font-medium text-gray-700">Модель ДВС и VIN-код</label>
+                        <input type="text" id="engine_vin" value="" placeholder="H4M-1.6 X7L..." class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700">Цена</label>
+                        <input type="text" id="price" value="" placeholder="125 000р – по QR коду" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="comments" class="block text-sm font-medium text-gray-700">Комментарии</label>
+                        <textarea id="comments" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Клиент оставил машину... Нажмите Enter для новой строки."></textarea>
+                    </div>
+                    <div>
+                        <label for="payment_status" class="block text-sm font-medium text-gray-700">Статус оплаты двигателя</label>
+                        <select id="payment_status" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="unpaid">Не оплачен</option>
+                            <option value="paid">Оплачен</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="manager" class="block text-sm font-medium text-gray-700">Менеджер, тел.</label>
+                        <input type="text" id="manager" value="" placeholder="Петров Петр 89001234567" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
                 </div>
-                <div>
-                    <label for="input_date" class="block text-sm font-medium text-gray-700">Дата выдачи</label>
-                    <input type="date" id="input_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                </div>
-                 <div>
-                    <label for="input_recipient_name" class="block text-sm font-medium text-gray-700">ФИО и дата рождения получателя</label>
-                    <input type="text" id="input_recipient_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Иванов Иван Иванович, 01.01.1990 г.р.">
-                </div>
-                <div>
-                    <label for="input_recipient_id" class="block text-sm font-medium text-gray-700">Данные получателя (паспорт/ВУ)</label>
-                    <textarea id="input_recipient_id" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="паспорт 00 00 123456, выдан ОУФМС России по г. Москва 01.01.2010"></textarea>
-                </div>
-            </form>
-             <div class="mt-6 pt-4 border-t">
-                <button id="generate-pdf" class="w-full bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 text-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-                    Загрузка шаблона...
+                 <button id="downloadBtn" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                    Скачать заявку (JPG)
                 </button>
-                <p id="error-message" class="text-red-500 text-sm text-center mt-2 hidden">Ошибка: Не удалось загрузить 'template.jpg'. Убедитесь, что файл в репозитории.</p>
+            </div>
+
+            <!-- Предпросмотр заявки --><div class="bg-white rounded-lg shadow-md preview-wrapper">
+                 <div id="application-preview">
+                    <table class="application-table">
+                        <thead>
+                           <tr>
+                               <th colspan="2" class="header-cell">ЗАЯВКА НА УСТАНОВКУ</th>
+                               <th class="header-cell text-center"><span id="preview-city" class="city-span"></span></th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="number-cell">1</td>
+                                <td class="label-cell">ФИО клиента, тел.</td>
+                                <td class="data-cell">
+                                    <span id="preview-client-info" class="value-span"></span>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">2</td>
+                                <td class="label-cell">Дата установки</td>
+                                <td class="data-cell"><span id="preview-date" class="value-span"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="number-cell">3</td>
+                                <td class="label-cell">Модель Номер авто</td>
+                                <td class="data-cell"><span id="preview-car-model" class="value-span"></span></td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">4</td>
+                                <td class="label-cell">Модель ДВС вин код</td>
+                                <td class="data-cell"><span id="preview-engine-vin" class="value-span"></span></td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">5</td>
+                                <td class="label-cell">Цена</td>
+                                <td class="data-cell"><span id="preview-price" class="value-span"></span></td>
+                            </tr>
+                             <tr>
+                                <td class="number-cell">6</td>
+                                <td class="label-cell">Комментарии</td>
+                                <td class="data-cell">
+                                    <span id="preview-comments" class="value-span comments-preview"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="number-cell">7</td>
+                                <td class="label-cell">Статус оплаты двигателя</td>
+                                <td class="data-cell">
+                                    <span id="preview-payment-status" class="font-bold-upper status-unpaid">НЕ ОПЛАЧЕН</span>
+                                </td>
+                            </tr>
+                              <tr>
+                                <td class="number-cell">8</td>
+                                <td class="label-cell">Менеджер, тел</td>
+                                <td class="data-cell"><span id="preview-manager" class="value-span"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Hidden container for rendering -->
-    <div id="document-container">
-        <img id="background-image" src="" />
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Функция для инициализации: очищает предпросмотр при загрузке
+            const initializePreview = () => {
+                const previewSpans = document.querySelectorAll('#application-preview .value-span, #application-preview .city-span');
+                previewSpans.forEach(span => {
+                    span.textContent = '';
+                });
+            };
+            
+            initializePreview();
 
-<script>
-const { jsPDF } = window.jspdf;
+            // 1. Обработка простых текстовых полей
+            const textFields = {
+                'city': 'preview-city',
+                'client_info': 'preview-client-info',
+                'install_date': 'preview-date',
+                'car_model': 'preview-car-model',
+                'engine_vin': 'preview-engine-vin',
+                'price': 'preview-price',
+                'manager': 'preview-manager',
+            };
 
-const templateData = [
-  {"id":"НОМЕР_договора","text":"","top":"6.36%","left":"68.00%","width":"11.00%","fontSize":"11.5pt","color":"rgb(0, 0, 0)","fontWeight":"bold"},
-  {"id":"ФИО","text":"","top":"38.42%","left":"10.25%","width":"82.50%","fontSize":"11.5pt","color":"rgb(0, 0, 0)","fontWeight":"bold"},
-  {"id":"паспрт_серия_и_тд","text":"","top":"43.89%","left":"10.25%","width":"82.50%","fontSize":"11.5pt","color":"rgb(0, 0, 0)","fontWeight":"bold"},
-  {"id":"exp_day","text":"","top":"65.18%","left":"53.00%","width":"4.00%","fontSize":"12pt","color":"rgb(0, 0, 0)","fontWeight":""},
-  {"id":"exp_month","text":"","top":"65.09%","left":"58.88%","width":"19.00%","fontSize":"12pt","color":"rgb(0, 0, 0)","fontWeight":""},
-  {"id":"exp_year","text":"","top":"65.11%","left":"79.13%","width":"4.50%","fontSize":"13pt","color":"rgb(0, 0, 0)","fontWeight":""},
-  {"id":"issue_day","text":"","top":"12.19%","left":"68.63%","width":"4.00%","fontSize":"12pt","color":"rgb(0, 0, 0)","fontWeight":""},
-  {"id":"issue_month","text":"","top":"12.10%","left":"74.13%","width":"13.00%","fontSize":"12pt","color":"rgb(0, 0, 0)","fontWeight":""},
-  {"id":"issue_year","text":"","top":"12.20%","left":"87.63%","width":"3.50%","fontSize":"12.6pt","color":"rgb(0, 0, 0)","fontWeight":""}
-];
+            for (const inputId in textFields) {
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById(textFields[inputId]);
+                if (inputElement && previewElement) {
+                    inputElement.addEventListener('input', (event) => {
+                        previewElement.textContent = event.target.value;
+                    });
+                }
+            }
 
+            // 2. Обработка поля с комментариями (через textContent для поддержки переносов строк)
+            const commentsInput = document.getElementById('comments');
+            const commentsPreview = document.getElementById('preview-comments');
+            if (commentsInput && commentsPreview) {
+                commentsInput.addEventListener('input', (event) => {
+                    commentsPreview.textContent = event.target.value;
+                });
+            }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('document-container');
-    const generateBtn = document.getElementById('generate-pdf');
-    const htmlImageElement = document.getElementById('background-image');
-    const errorMessage = document.getElementById('error-message');
+            // 3. Обработка статуса оплаты с условным форматированием
+            const statusInput = document.getElementById('payment_status');
+            const statusPreview = document.getElementById('preview-payment-status');
+            if (statusInput && statusPreview) {
+                statusInput.addEventListener('input', (event) => {
+                    if (event.target.value === 'paid') {
+                        statusPreview.textContent = 'ОПЛАЧЕН';
+                        statusPreview.classList.remove('status-unpaid');
+                        statusPreview.classList.add('status-paid');
+                    } else {
+                        statusPreview.textContent = 'НЕ ОПЛАЧЕН';
+                        statusPreview.classList.remove('status-paid');
+                        statusPreview.classList.add('status-unpaid');
+                    }
+                });
+            }
+            
+            // 4. Обработчик для кнопки скачивания
+            const downloadButton = document.getElementById('downloadBtn');
+            const previewElementForDownload = document.getElementById('application-preview');
 
-    // --- NEW LOGIC TO PRELOAD IMAGE ---
-    // This method is more reliable, especially on mobile browsers
-    const imageToPreload = new Image();
-    
-    imageToPreload.onload = () => {
-        // Now that the image is loaded in memory, set it as the source for the hidden image tag
-        htmlImageElement.src = imageToPreload.src;
-        // And enable the button
-        generateBtn.disabled = false;
-        generateBtn.textContent = 'Создать и скачать PDF';
-        errorMessage.classList.add('hidden');
-    };
-    imageToPreload.onerror = () => {
-        generateBtn.textContent = 'Ошибка загрузки шаблона';
-        errorMessage.classList.remove('hidden');
-    };
-
-    // Start loading the image
-    imageToPreload.src = 'template.jpg';
-    
-    templateData.forEach(data => {
-        const field = document.createElement('div');
-        field.id = data.id;
-        field.className = 'dynamic-field';
-        field.style.top = data.top;
-        field.style.left = data.left;
-        field.style.width = data.width;
-        field.style.fontSize = data.fontSize;
-        field.style.color = data.color;
-        field.style.fontWeight = data.fontWeight;
-        container.appendChild(field);
-    });
-
-    document.getElementById('input_date').value = new Date().toISOString().slice(0, 10);
-    generateBtn.addEventListener('click', generatePdf);
-});
-
-
-function updateHiddenDocument() {
-    document.getElementById('НОМЕР_договора').innerText = document.getElementById('input_doc_num').value || document.getElementById('input_doc_num').placeholder;
-    document.getElementById('ФИО').innerText = document.getElementById('input_recipient_name').value || document.getElementById('input_recipient_name').placeholder;
-    document.getElementById('паспрт_серия_и_тд').innerText = document.getElementById('input_recipient_id').value || document.getElementById('input_recipient_id').placeholder;
-
-    const dateValue = document.getElementById('input_date').value;
-    if (dateValue) {
-        const issueDate = new Date(dateValue);
-        const monthsProper = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"];
-        
-        document.getElementById('issue_day').innerText = String(issueDate.getDate()).padStart(2, '0');
-        document.getElementById('issue_month').innerText = monthsProper[issueDate.getMonth()];
-        document.getElementById('issue_year').innerText = String(issueDate.getFullYear()).slice(2);
-        
-        document.getElementById('exp_day').innerText = String(issueDate.getDate()).padStart(2, '0');
-        document.getElementById('exp_month').innerText = monthsProper[issueDate.getMonth()];
-        document.getElementById('exp_year').innerText = String(issueDate.getFullYear()).slice(2);
-    }
-}
-
-async function generatePdf() {
-    showLoading('Подготовка PDF...');
-    updateHiddenDocument();
-
-    const container = document.getElementById('document-container');
-    
-    setTimeout(async () => {
-        try {
-            const canvas = await html2canvas(container, {
-                scale: 3,
-                useCORS: true,
-                logging: false,
-                windowWidth: container.scrollWidth,
-                windowHeight: container.scrollHeight
+            downloadButton.addEventListener('click', () => {
+                html2canvas(previewElementForDownload, {
+                    scale: 3, // Увеличили масштаб для лучшего качества
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'zayavka_na_ustanovku_DVS.jpg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.95); // Увеличили качество JPEG
+                    link.click();
+                });
             });
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            const pdf = new jsPDF({
-                orientation: 'p',
-                unit: 'px',
-                format: 'a4'
-            });
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save('doverennost.pdf');
-        } catch (error) {
-            console.error("Ошибка при создании PDF:", error);
-        } finally {
-            hideLoading();
-        }
-    }, 200);
-}
 
-function showLoading(message) {
-    document.getElementById('loading-text').textContent = message;
-    document.getElementById('loading-overlay').classList.remove('hidden');
-}
+            // 5. Логика масштабирования для предпросмотра
+            const previewWrapper = document.querySelector('.preview-wrapper');
+            const previewElementForScale = document.getElementById('application-preview');
+            const previewContentWidth = 700; // Исходная ширина контента для предпросмотра
 
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.add('hidden');
-}
-</script>
+            const scalePreview = () => {
+                if (!previewWrapper || !previewElementForScale) return;
+                
+                const containerWidth = previewWrapper.offsetWidth;
+                
+                if (containerWidth < previewContentWidth) {
+                    const scale = containerWidth / previewContentWidth;
+                    previewElementForScale.style.transform = `scale(${scale})`;
+                    // Корректируем высоту обертки, чтобы она соответствовала масштабированному содержимому
+                    previewWrapper.style.height = `${previewElementForScale.offsetHeight * scale}px`;
+                } else {
+                    previewElementForScale.style.transform = 'scale(1)';
+                    previewWrapper.style.height = 'auto'; // Сброс высоты, если нет масштабирования
+                }
+            };
 
+            // Запускаем масштабирование при загрузке и изменении размера окна
+            window.addEventListener('resize', scalePreview);
+            scalePreview(); // Вызываем при первой загрузке
+        });
+    </script>
 </body>
 </html>
 
