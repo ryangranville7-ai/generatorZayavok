@@ -91,8 +91,7 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Панель управления (форма ввода) -->
-            <div class="bg-white p-6 rounded-lg shadow-md controls">
+            <!-- Панель управления (форма ввода) --><div class="bg-white p-6 rounded-lg shadow-md controls">
                 <h2 class="text-xl font-bold mb-4 text-gray-700">Данные для заявки</h2>
                 <div class="space-y-4">
                     <div>
@@ -109,15 +108,15 @@
                     </div>
                     <div>
                         <label for="car_model" class="block text-sm font-medium text-gray-700">Модель и номер авто</label>
-                        <input type="text" id="car_model" value="" placeholder="Kia Rio A123BC777" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <input type="text" id="car_model" value="" placeholder="Lada Vesta A123BC777" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                     <div>
                         <label for="engine_vin" class="block text-sm font-medium text-gray-700">Модель ДВС и VIN-код</label>
-                        <input type="text" id="engine_vin" value="" placeholder="G4FC 1.6л ..." class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <input type="text" id="engine_vin" value="" placeholder="H4M-1.6 X7L..." class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                      <div>
                         <label for="price" class="block text-sm font-medium text-gray-700">Цена</label>
-                        <input type="text" id="price" value="" placeholder="115 000р" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <input type="text" id="price" value="" placeholder="125 000р – по QR коду" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                     <div>
                         <label for="comments" class="block text-sm font-medium text-gray-700">Комментарии</label>
@@ -140,8 +139,7 @@
                 </button>
             </div>
 
-            <!-- Предпросмотр заявки -->
-            <div class="bg-white rounded-lg shadow-md preview-wrapper">
+            <!-- Предпросмотр заявки --><div class="bg-white rounded-lg shadow-md preview-wrapper">
                  <div id="application-preview">
                     <table class="application-table">
                         <thead>
@@ -269,13 +267,13 @@
 
             downloadButton.addEventListener('click', () => {
                 html2canvas(previewElementForDownload, {
-                    scale: 2, 
+                    scale: 3, // Увеличили масштаб для лучшего качества
                     useCORS: true,
                     backgroundColor: '#ffffff'
                 }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = 'zayavka_na_ustanovku.jpg';
-                    link.href = canvas.toDataURL('image/jpeg', 0.9); 
+                    link.download = 'zayavka_na_ustanovku_DVS.jpg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.95); // Увеличили качество JPEG
                     link.click();
                 });
             });
@@ -283,31 +281,29 @@
             // 5. Логика масштабирования для предпросмотра
             const previewWrapper = document.querySelector('.preview-wrapper');
             const previewElementForScale = document.getElementById('application-preview');
-            const previewWidth = 700; // Фиксированная ширина контента для предпросмотра
+            const previewContentWidth = 700; // Исходная ширина контента для предпросмотра
 
             const scalePreview = () => {
                 if (!previewWrapper || !previewElementForScale) return;
                 
                 const containerWidth = previewWrapper.offsetWidth;
                 
-                if (containerWidth < previewWidth) {
-                    const scale = containerWidth / previewWidth;
+                if (containerWidth < previewContentWidth) {
+                    const scale = containerWidth / previewContentWidth;
                     previewElementForScale.style.transform = `scale(${scale})`;
-                    // Подгоняем высоту контейнера под масштабированный элемент
+                    // Корректируем высоту обертки, чтобы она соответствовала масштабированному содержимому
                     previewWrapper.style.height = `${previewElementForScale.offsetHeight * scale}px`;
                 } else {
                     previewElementForScale.style.transform = 'scale(1)';
-                    previewWrapper.style.height = 'auto';
+                    previewWrapper.style.height = 'auto'; // Сброс высоты, если нет масштабирования
                 }
             };
 
             // Запускаем масштабирование при загрузке и изменении размера окна
             window.addEventListener('resize', scalePreview);
-            scalePreview();
+            scalePreview(); // Вызываем при первой загрузке
         });
     </script>
 </body>
 </html>
-
-
 
