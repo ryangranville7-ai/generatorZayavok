@@ -81,7 +81,7 @@
 
     <!-- Hidden container for rendering -->
     <div id="document-container">
-        <img id="background-image" src="template.jpg" />
+        <img id="background-image" src="" />
     </div>
 
 <script>
@@ -103,19 +103,28 @@ const templateData = [
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('document-container');
     const generateBtn = document.getElementById('generate-pdf');
-    const backgroundImage = document.getElementById('background-image');
+    const htmlImageElement = document.getElementById('background-image');
     const errorMessage = document.getElementById('error-message');
 
-    // Handle image loading states
-    backgroundImage.onload = () => {
+    // --- NEW LOGIC TO PRELOAD IMAGE ---
+    // This method is more reliable, especially on mobile browsers
+    const imageToPreload = new Image();
+    
+    imageToPreload.onload = () => {
+        // Now that the image is loaded in memory, set it as the source for the hidden image tag
+        htmlImageElement.src = imageToPreload.src;
+        // And enable the button
         generateBtn.disabled = false;
         generateBtn.textContent = 'Создать и скачать PDF';
         errorMessage.classList.add('hidden');
     };
-    backgroundImage.onerror = () => {
+    imageToPreload.onerror = () => {
         generateBtn.textContent = 'Ошибка загрузки шаблона';
         errorMessage.classList.remove('hidden');
     };
+
+    // Start loading the image
+    imageToPreload.src = 'template.jpg';
     
     templateData.forEach(data => {
         const field = document.createElement('div');
