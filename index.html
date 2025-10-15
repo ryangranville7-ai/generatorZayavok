@@ -130,13 +130,15 @@
                         </select>
                     </div>
                     <div>
-                        <label for="manager_input" class="block text-sm font-medium text-gray-700">Менеджер, тел.</label>
-                        <input type="text" id="manager_input" list="manager_list" placeholder="Начните вводить или выберите из списка" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <datalist id="manager_list">
-                            <option value="Дамир +79823066954"></option>
-                            <option value="Алексей Янчук +7 982 307-07-20"></option>
-                            <option value="Алексей Соколов +7 912 895-01-47"></option>
-                        </datalist>
+                        <label for="manager_select" class="block text-sm font-medium text-gray-700">Менеджер, тел.</label>
+                        <select id="manager_select" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="" disabled selected>Выберите менеджера</option>
+                            <option value="Дамир +79823066954">Дамир +79823066954</option>
+                            <option value="Алексей Янчук +7 982 307-07-20">Алексей Янчук +7 982 307-07-20</option>
+                            <option value="Алексей Соколов +7 912 895-01-47">Алексей Соколов +7 912 895-01-47</option>
+                            <option value="manual">Ввести вручную</option>
+                        </select>
+                        <input type="text" id="manager_manual" placeholder="Введите ФИО и телефон менеджера" class="mt-2 hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                 </div>
                  <button id="downloadBtn" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
@@ -265,14 +267,30 @@
                 });
             }
 
-            // 4. Обработка поля менеджера с автодополнением
-            const managerInput = document.getElementById('manager_input');
+            // 4. Обработка выбора менеджера
+            const managerSelect = document.getElementById('manager_select');
+            const managerManualInput = document.getElementById('manager_manual');
             const managerPreview = document.getElementById('preview-manager');
-            if (managerInput && managerPreview) {
-                managerInput.addEventListener('input', (event) => {
-                    managerPreview.textContent = event.target.value;
-                });
-            }
+
+            const handleManagerChange = () => {
+                const selectedValue = managerSelect.value;
+                if (selectedValue === 'manual') {
+                    managerManualInput.classList.remove('hidden');
+                    managerPreview.textContent = managerManualInput.value;
+                } else {
+                    managerManualInput.classList.add('hidden');
+                    // Устанавливаем значение в предпросмотр, даже если выбрана пустая опция
+                    managerPreview.textContent = selectedValue;
+                }
+            };
+
+            managerSelect.addEventListener('change', handleManagerChange);
+
+            managerManualInput.addEventListener('input', () => {
+                if (managerSelect.value === 'manual') {
+                    managerPreview.textContent = managerManualInput.value;
+                }
+            });
             
             // 5. Обработчик для кнопки скачивания
             const downloadButton = document.getElementById('downloadBtn');
